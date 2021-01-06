@@ -35,6 +35,10 @@ public class CameraController : MonoBehaviour
     // LateUpdate is called once per frame, after Update().
     void LateUpdate()
     {
-        transform.position = trackedObject.transform.position + defaultOffset;
+        float x = trackedObject.transform.position.x + defaultOffset.x;
+        float y = defaultOffset.y;
+        float z = trackedObject.transform.position.z + defaultOffset.z;
+
+        transform.position = new Vector3(x, y, z);
     }
 }

@@ -5,15 +5,23 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     public float moveSpeed = 1;
+
+    private Rigidbody body;
  
     // Start is called before the first frame update
     void Start()
     {
+        body = GetComponent<Rigidbody>();
 
+        if (body == null)
+        {
+            Debug.LogError("Failed to get Rigidbody component!");
+            return;
+        }
     }
 
-    // FixedUpdate is called at a fixed interval independently of frame rate.
-    void FixedUpdate()
+    // Update is called for each frame
+    void Update()
     {
         MovePlayer();
     }
@@ -31,6 +39,6 @@ public class PlayerController : MonoBehaviour
         Vector3 movement = new Vector3(moveHorizontal, 0, moveVertical);
 
         // Move the player object
-        transform.Translate(movement * moveSpeed * Time.deltaTime);
+        body.AddForce(movement * moveSpeed);
     }
 }
