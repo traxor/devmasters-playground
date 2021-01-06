@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    public float moveSpeed = 1;
+    public float moveSpeed = 5;
+    public float maxSpeed = 10;
 
     private Rigidbody body;
  
@@ -39,6 +40,7 @@ public class PlayerController : MonoBehaviour
         Vector3 movement = new Vector3(moveHorizontal, 0, moveVertical);
 
         // Move the player object
-        body.AddForce(movement * moveSpeed);
+        Vector3 clampedSpeed = Vector3.ClampMagnitude(movement * moveSpeed, maxSpeed);
+        body.AddForce(clampedSpeed);
     }
 }
