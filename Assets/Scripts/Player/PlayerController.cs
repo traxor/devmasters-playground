@@ -4,16 +4,25 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    public float moveSpeed = 1;
+    public float moveSpeed = 5;
+    public float maxSpeed = 10;
+
+    private Rigidbody body;
  
     // Start is called before the first frame update
     void Start()
     {
+        body = GetComponent<Rigidbody>();
 
+        if (body == null)
+        {
+            Debug.LogError("Failed to get Rigidbody component!");
+            return;
+        }
     }
 
-    // FixedUpdate is called at a fixed interval independently of frame rate.
-    void FixedUpdate()
+    // Update is called for each frame
+    void Update()
     {
         MovePlayer();
     }
@@ -31,6 +40,7 @@ public class PlayerController : MonoBehaviour
         Vector3 movement = new Vector3(moveHorizontal, 0, moveVertical);
 
         // Move the player object
-        transform.Translate(movement * moveSpeed * Time.deltaTime);
+        Vector3 clampedSpeed = Vector3.ClampMagnitude(movement * moveSpeed, maxSpeed);
+        body.AddForce(clampedSpeed);
     }
 }
