@@ -4,21 +4,18 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    public float moveSpeed = 5;
-    public float maxSpeed = 10;
+    public Animator animator;
+    public CharacterController characterController;
+    public float walkSpeed = 5f;
+    public float runSpeed = 8f;
 
-    private Rigidbody body;
- 
+    private Vector3 playerVelocity = Vector3.zero;
+    private bool groundedPlayer;
+
     // Start is called before the first frame update
     void Start()
     {
-        body = GetComponent<Rigidbody>();
-
-        if (body == null)
-        {
-            Debug.LogError("Failed to get Rigidbody component!");
-            return;
-        }
+        characterController = gameObject.GetComponent<CharacterController>();
     }
 
     // Update is called for each frame
@@ -28,19 +25,77 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// To be executed in update. Moves the player according to current input.
+    /// To be executed in update. Moves the character according to current input.
     /// </summary>
     void MovePlayer()
     {
-        // Read player input
+        // Remove all negative Y-axis velocity if already grounded
+        groundedPlayer = characterController.isGrounded;
+        if (groundedPlayer && playerVelocity.y < 0)
+        {
+            playerVelocity.y = 0f;
+        }
+
+        // Read input
         float moveHorizontal = Input.GetAxis("Horizontal");
         float moveVertical = Input.GetAxis("Vertical");
+        bool isRunning = Input.GetKey(KeyCode.LeftShift);
 
-        // Calculate new movement vector
-        Vector3 movement = new Vector3(moveHorizontal, 0, moveVertical);
+        // Calculate player movement speed and move accordingly
+        Vector3 movementDirection = new Vector3(moveHorizontal, 0, moveVertical);
+        Vector3 movementSpeed;
 
-        // Move the player object
-        Vector3 clampedSpeed = Vector3.ClampMagnitude(movement * moveSpeed, maxSpeed);
-        body.AddForce(clampedSpeed);
+        if (isRunning)
+        {
+            movementSpeed = movementDirection * runSpeed;
+        }
+        else
+        {
+            movementSpeed = movementDirection * walkSpeed;
+        }
+        SetMovementAnimation(movementSpeed);
+        characterController.Move(movementSpeed * Time.deltaTime);
+
+        // Calculate and add gravity
+        Vector3 gravitySpeed;
+
+        if (groundedPlayer)
+        {
+            gravitySpeed = new Vector3(0, 0, 0);
+        }
+        else
+        {
+            gravitySpeed = new Vector3(0, Physics.gravity.y, 0);
+        }
+        characterController.Move(gravitySpeed * Time.deltaTime);
+    }
+
+    /// <summary>
+    /// Gets the maximum magnitude of the movement directions to decide if
+    /// the character should be running, walking, or standing idle.
+    /// </summary>
+    /// <param name="movementSpeed"></param>
+    void SetMovementAnimation(Vector3 movementSpeed)
+    {
+        float maxMovement = Mathf.Max(Mathf.Abs(movementSpeed.x),
+                                      Mathf.Abs(movementSpeed.y));
+        if (maxMovement >= runSpeed)
+        {
+            // Running
+            animator.SetTrigger("isRunning");
+            animator.SetTrigger("isWalking");
+        }
+        else if (maxMovement < runSpeed && maxMovement > 0)
+        {
+            // Walking
+            animator.SetTrigger("isWalking");
+            animator.SetTrigger("isRunning");
+        }
+        else
+        {
+            // Idle
+            animator.SetTrigger("isWalking");
+            animator.SetTrigger("isRunning");
+        }
     }
 }
