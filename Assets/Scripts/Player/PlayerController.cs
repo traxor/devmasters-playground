@@ -6,10 +6,12 @@ public class PlayerController : MonoBehaviour
 {
     public Animator animator;
     public CharacterController characterController;
-    public float walkSpeed = 5f;
+    public float rotationSpeedInRadians = 10;
     public float runSpeed = 8f;
+    public float walkSpeed = 5f;
 
     private Vector3 playerVelocity = Vector3.zero;
+    private Vector3 playerMovement = Vector3.zero;
     private bool groundedPlayer;
 
     // Start is called before the first frame update
@@ -22,10 +24,13 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         MovePlayer();
+        RotatePlayer();
+        SetMovementAnimation();
     }
 
     /// <summary>
     /// To be executed in update. Moves the character according to current input.
+    /// Handles gravity and jumping.
     /// </summary>
     void MovePlayer()
     {
@@ -43,18 +48,16 @@ public class PlayerController : MonoBehaviour
 
         // Calculate player movement speed and move accordingly
         Vector3 movementDirection = new Vector3(moveHorizontal, 0, moveVertical);
-        Vector3 movementSpeed;
 
         if (isRunning)
         {
-            movementSpeed = movementDirection * runSpeed;
+            playerMovement = movementDirection * runSpeed;
         }
         else
         {
-            movementSpeed = movementDirection * walkSpeed;
+            playerMovement = movementDirection * walkSpeed;
         }
-        SetMovementAnimation(movementSpeed);
-        characterController.Move(movementSpeed * Time.deltaTime);
+        characterController.Move(playerMovement * Time.deltaTime);
 
         // Calculate and add gravity
         Vector3 gravitySpeed;
@@ -71,31 +74,36 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
+    /// Tries to rotats the player according to the current movement direction.
+    /// Rotation is limited by the player's maximum rotation speed.
+    /// </summary>
+    void RotatePlayer()
+    {
+        if (Vector3.zero == playerMovement)
+        {
+            // If we're not moving anywhere, don't rotate.
+            return;
+        }
+
+        Vector3 targetDirection = playerMovement.normalized;
+        Debug.DrawRay(transform.position, targetDirection, Color.red);
+
+        float rotationStep = rotationSpeedInRadians * Time.deltaTime;
+
+        Vector3 newDirection = Vector3.RotateTowards(transform.forward, targetDirection, rotationStep, 0.0f);
+        Debug.DrawRay(transform.position, targetDirection, Color.green);
+
+        transform.rotation = Quaternion.LookRotation(newDirection);
+    }
+
+    /// <summary>
     /// Gets the maximum magnitude of the movement directions to decide if
     /// the character should be running, walking, or standing idle.
     /// </summary>
-    /// <param name="movementSpeed"></param>
-    void SetMovementAnimation(Vector3 movementSpeed)
+    void SetMovementAnimation()
     {
-        float maxMovement = Mathf.Max(Mathf.Abs(movementSpeed.x),
-                                      Mathf.Abs(movementSpeed.y));
-        if (maxMovement >= runSpeed)
-        {
-            // Running
-            animator.SetTrigger("isRunning");
-            animator.SetTrigger("isWalking");
-        }
-        else if (maxMovement < runSpeed && maxMovement > 0)
-        {
-            // Walking
-            animator.SetTrigger("isWalking");
-            animator.SetTrigger("isRunning");
-        }
-        else
-        {
-            // Idle
-            animator.SetTrigger("isWalking");
-            animator.SetTrigger("isRunning");
-        }
+        float maxMovement = Mathf.Max(Mathf.Abs(playerMovement.x),
+                                      Mathf.Abs(playerMovement.z));
+        animator.SetFloat("MovementSpeed", maxMovement);
     }
 }

@@ -867,8 +867,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   animator: {fileID: 1878526699}
   characterController: {fileID: 1878526698}
-  moveSpeed: 5
-  maxSpeed: 10
+  rotationSpeedInRadians: 10
+  runSpeed: 8
+  walkSpeed: 5
 --- !u!143 &1878526698
 CharacterController:
   m_ObjectHideFlags: 0
