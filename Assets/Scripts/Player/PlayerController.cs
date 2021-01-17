@@ -12,6 +12,8 @@ public class PlayerController : MonoBehaviour
 
     //private Vector3 playerVelocity = Vector3.zero;
     private Vector3 movementInput = Vector3.zero;
+    private bool isGrounded;
+    private float jumpHeight = 1000.0f;
 
     /// <summary>
     /// Start is called before the first frame update
@@ -37,6 +39,8 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     void MovePlayer()
     {
+        isGrounded = characterController.isGrounded;
+
         // TODO: Code below is a preparation for jumping mechanics
         // Remove all negative Y-axis velocity if already grounded
         //if (characterController.isGrounded && playerVelocity.y < 0)
@@ -51,6 +55,7 @@ public class PlayerController : MonoBehaviour
 
         // Calculate player movement speed and move accordingly
         Vector3 movementDirection = new Vector3(moveHorizontal, 0, moveVertical);
+        transform.TransformDirection(movementDirection);
 
         if (isRunning)
         {
@@ -63,17 +68,30 @@ public class PlayerController : MonoBehaviour
         characterController.Move(movementInput * Time.deltaTime);
 
         // Calculate and add gravity
-        Vector3 gravitySpeed;
+        Vector3 gravitySpeed = Vector3.zero;
 
-        if (characterController.isGrounded)
+
+        if (isGrounded)
         {
-            gravitySpeed = new Vector3(0, 0, 0);
+            if (Input.GetButton("Jump"))
+            {
+                Debug.Log("Jump!");
+                gravitySpeed.y += jumpHeight;
+            }
+            else
+            {
+                // Player is grounded and not jumping
+                gravitySpeed.y = -characterController.stepOffset / Time.deltaTime;
+
+            }
+
         }
         else
         {
-            gravitySpeed = new Vector3(0, Physics.gravity.y, 0);
+            gravitySpeed.y += Physics.gravity.y;
         }
         characterController.Move(gravitySpeed * Time.deltaTime);
+
     }
 
     /// <summary>
