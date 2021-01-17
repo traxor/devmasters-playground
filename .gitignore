@@ -71,4 +71,4 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
 # Asset store packages
-/Assets/AssetStore/*
+/[Aa]ssets/[Aa]sset[Ss]tore/*
