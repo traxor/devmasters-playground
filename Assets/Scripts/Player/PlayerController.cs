@@ -10,17 +10,20 @@ public class PlayerController : MonoBehaviour
     public float runSpeed = 8f;
     public float walkSpeed = 5f;
 
-    private Vector3 playerVelocity = Vector3.zero;
-    private Vector3 playerMovement = Vector3.zero;
-    private bool groundedPlayer;
+    //private Vector3 playerVelocity = Vector3.zero;
+    private Vector3 movementInput = Vector3.zero;
 
-    // Start is called before the first frame update
+    /// <summary>
+    /// Start is called before the first frame update
+    /// </summary>
     void Start()
     {
         characterController = gameObject.GetComponent<CharacterController>();
     }
 
-    // Update is called for each frame
+    /// <summary>
+    /// Update is called for each frame.
+    /// </summary>
     void Update()
     {
         MovePlayer();
@@ -34,12 +37,12 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     void MovePlayer()
     {
+        // TODO: Code below is a preparation for jumping mechanics
         // Remove all negative Y-axis velocity if already grounded
-        groundedPlayer = characterController.isGrounded;
-        if (groundedPlayer && playerVelocity.y < 0)
-        {
-            playerVelocity.y = 0f;
-        }
+        //if (characterController.isGrounded && playerVelocity.y < 0)
+        //{
+        //    playerVelocity.y = 0f;
+        //}
 
         // Read input
         float moveHorizontal = Input.GetAxis("Horizontal");
@@ -51,18 +54,18 @@ public class PlayerController : MonoBehaviour
 
         if (isRunning)
         {
-            playerMovement = movementDirection * runSpeed;
+            movementInput = movementDirection * runSpeed;
         }
         else
         {
-            playerMovement = movementDirection * walkSpeed;
+            movementInput = movementDirection * walkSpeed;
         }
-        characterController.Move(playerMovement * Time.deltaTime);
+        characterController.Move(movementInput * Time.deltaTime);
 
         // Calculate and add gravity
         Vector3 gravitySpeed;
 
-        if (groundedPlayer)
+        if (characterController.isGrounded)
         {
             gravitySpeed = new Vector3(0, 0, 0);
         }
@@ -74,18 +77,18 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// Tries to rotats the player according to the current movement direction.
+    /// Tries to rotate the player towards the current movement direction.
     /// Rotation is limited by the player's maximum rotation speed.
     /// </summary>
     void RotatePlayer()
     {
-        if (Vector3.zero == playerMovement)
+        if (Vector3.zero == movementInput)
         {
             // If we're not moving anywhere, don't rotate.
             return;
         }
 
-        Vector3 targetDirection = playerMovement.normalized;
+        Vector3 targetDirection = movementInput.normalized;
         Debug.DrawRay(transform.position, targetDirection, Color.red);
 
         float rotationStep = rotationSpeedInRadians * Time.deltaTime;
@@ -102,8 +105,8 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     void SetMovementAnimation()
     {
-        float maxMovement = Mathf.Max(Mathf.Abs(playerMovement.x),
-                                      Mathf.Abs(playerMovement.z));
+        float maxMovement = Mathf.Max(Mathf.Abs(movementInput.x),
+                                      Mathf.Abs(movementInput.z));
         animator.SetFloat("MovementSpeed", maxMovement);
     }
 }
