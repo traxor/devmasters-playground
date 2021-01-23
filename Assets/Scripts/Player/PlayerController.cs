@@ -12,8 +12,9 @@ public class PlayerController : MonoBehaviour
 
     //private Vector3 playerVelocity = Vector3.zero;
     private Vector3 movementInput = Vector3.zero;
+    private Vector3 playerVelocity;
     private bool isGrounded;
-    private float jumpHeight = 1000.0f;
+    private float jumpHeight = 1.0f;
 
     /// <summary>
     /// Start is called before the first frame update
@@ -41,12 +42,11 @@ public class PlayerController : MonoBehaviour
     {
         isGrounded = characterController.isGrounded;
 
-        // TODO: Code below is a preparation for jumping mechanics
-        // Remove all negative Y-axis velocity if already grounded
-        //if (characterController.isGrounded && playerVelocity.y < 0)
-        //{
-        //    playerVelocity.y = 0f;
-        //}
+        if (isGrounded && playerVelocity.y < 0)
+        {
+            playerVelocity.y = 0f;
+        }
+
 
         // Read input
         float moveHorizontal = Input.GetAxis("Horizontal");
@@ -67,30 +67,14 @@ public class PlayerController : MonoBehaviour
         }
         characterController.Move(movementInput * Time.deltaTime);
 
-        // Calculate and add gravity
-        Vector3 gravitySpeed = Vector3.zero;
-
-
-        if (isGrounded)
+        // Changes the height position of the player..
+        if (Input.GetButtonDown("Jump") && isGrounded)
         {
-            if (Input.GetButton("Jump"))
-            {
-                Debug.Log("Jump!");
-                gravitySpeed.y += jumpHeight;
-            }
-            else
-            {
-                // Player is grounded and not jumping
-                gravitySpeed.y = -characterController.stepOffset / Time.deltaTime;
-
-            }
-
+            playerVelocity.y += Mathf.Sqrt(jumpHeight * -3.0f * Physics.gravity.y);
         }
-        else
-        {
-            gravitySpeed.y += Physics.gravity.y;
-        }
-        characterController.Move(gravitySpeed * Time.deltaTime);
+        playerVelocity.y += Physics.gravity.y * Time.deltaTime;
+
+        characterController.Move(playerVelocity * Time.deltaTime);
 
     }
 
